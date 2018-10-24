@@ -171,7 +171,7 @@ void mpu_get_sensor_data(int16_data* acc, int16_data* gyro, int16_data* mag, int
 uint8_t mpu_test();
 
 
-#define CALIBRATE_NUM     500
+#define CALIBRATE_SHIFT     9
 void mpu_calibrate(int16_data* acc, int16_data* gyro);
 void mpu_get_mpucalibrate();
 

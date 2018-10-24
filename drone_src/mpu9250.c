@@ -150,7 +150,7 @@ void mpu_get_mpucalibrate()
   static int32_data gyro={0};
   //static int32_data mag;
 
-  for(int i=0;i<CALIBRATE_NUM;i++){
+  for(int i=0 ; i < (2<<CALIBRATE_SHIFT) ; i++){
     mpu_getacc(&acc_calibrate);
     mpu_getgyro(&gyro_calibrate);
     //mpu_getmag(&mag_calibrate);
@@ -163,8 +163,8 @@ void mpu_get_mpucalibrate()
     HAL_Delay(1);
   }
   for(int j=0;j<3;j++){
-    acc_calibrate.array.data[j]   = acc.array.data[j]/CALIBRATE_NUM;
-    gyro_calibrate.array.data[j]  = gyro.array.data[j]/CALIBRATE_NUM;
+    acc_calibrate.array.data[j]   = (acc.array.data[j]+256)>>CALIBRATE_SHIFT;
+    gyro_calibrate.array.data[j]  = (gyro.array.data[j]+256)>>CALIBRATE_SHIFT;
     //mag_calibrate.array.data[j]   = mag.array.data[j]/CALIBRATE_NUM;
   }
   acc_calibrate.xyz.z -= ACC_1G;
