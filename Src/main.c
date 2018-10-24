@@ -159,7 +159,7 @@ int main(void)
   mpu_get_mpucalibrate();
 
   temp = i2c_read_byte(BMP280_I2C_ADDRESS, BMP280_CHIP_ID_REG);
-  while(mpu_test());
+  //while(mpu_test());
   HAL_Delay(100);
   HAL_TIM_Base_Start_IT(&htim2);
   time = 0;
@@ -178,15 +178,14 @@ int main(void)
     mpu_getacc(&acc);
     mpu_getgyro(&gyro);
     compute_mag_revise(&mag, &mag_sensitivity, &mag32);
-    compute_trans_acc(&acc, &acc32);
-    compute_trans_gyro(&gyro, &gyro32);
+
 
     for(int i=0; i<3; i++){
-      sprintf((char*)str,"acc16-%d : %ld\n",i+1,acc32.array.data[i]);
+      sprintf((char*)str,"acc16-%d : %ld\n",i+1,acc.array.data[i]);
       HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
     }
     for(int i=0; i<3; i++){
-      sprintf((char*)str,"gyro16-%d : %ld\n",i+1,gyro32.array.data[i]);
+      sprintf((char*)str,"gyro16-%d : %ld\n",i+1,gyro.array.data[i]);
       HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
     }
     for(int i=0; i<3; i++){

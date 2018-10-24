@@ -19,9 +19,9 @@ void mpu_getacc(int16_data* data)
 {
   Raw_data raw={0};
   i2c_read_bytes(MPU9250_I2C_ADDRESS,MPU9250_X_ACC_REG,&raw,6);
-  data->array.data[ROLL]  = (raw.data[0]<<8 | raw.data[1]) >> MPU9250_ACCRAW_DIV;
-  data->array.data[PITCH] = (raw.data[2]<<8 | raw.data[3]) >> MPU9250_ACCRAW_DIV;
-  data->array.data[YAW]   = (raw.data[4]<<8 | raw.data[5]) >> MPU9250_ACCRAW_DIV;
+  data->array.data[ROLL]  = (int16_t)(raw.data[0]<<8 | raw.data[1]) >> MPU9250_ACCRAW_DIV;
+  data->array.data[PITCH] = (int16_t)(raw.data[2]<<8 | raw.data[3]) >> MPU9250_ACCRAW_DIV;
+  data->array.data[YAW]   = (int16_t)(raw.data[4]<<8 | raw.data[5]) >> MPU9250_ACCRAW_DIV;
   if(complete_calibrate){
     for(int i=0;i<3;i++){
       data->array.data[i] = data->array.data[i] - acc_calibrate.array.data[i];
@@ -32,9 +32,9 @@ void mpu_getgyro(int16_data* data)
 {
   Raw_data raw={0};
   i2c_read_bytes(MPU9250_I2C_ADDRESS,MPU9250_X_GYRO_REG,&raw,6);
-  data->array.data[ROLL]  = -((raw.data[2]<<8 | raw.data[3]) >> MPU9250_GYRORAW_DIV);
-  data->array.data[PITCH] =  (raw.data[0]<<8 | raw.data[1])  >> MPU9250_GYRORAW_DIV;
-  data->array.data[YAW]   =  (raw.data[4]<<8 | raw.data[5])  >> MPU9250_GYRORAW_DIV;
+  data->array.data[ROLL]  = -((int16_t)(raw.data[2]<<8 | raw.data[3]) >> MPU9250_GYRORAW_DIV);
+  data->array.data[PITCH] =  (int16_t)(raw.data[0]<<8 | raw.data[1])  >> MPU9250_GYRORAW_DIV;
+  data->array.data[YAW]   =  (int16_t)(raw.data[4]<<8 | raw.data[5])  >> MPU9250_GYRORAW_DIV;
   if(complete_calibrate){
     for(int i=0;i<3;i++){
       data->array.data[i] = data->array.data[i] - gyro_calibrate.array.data[i];
@@ -150,7 +150,7 @@ void mpu_get_mpucalibrate()
   static int32_data gyro={0};
   //static int32_data mag;
 
-  for(int i=0 ; i < (2<<CALIBRATE_SHIFT) ; i++){
+  for(int i=0 ; i < 512 ; i++){
     mpu_getacc(&acc_calibrate);
     mpu_getgyro(&gyro_calibrate);
     //mpu_getmag(&mag_calibrate);
