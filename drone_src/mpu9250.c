@@ -28,7 +28,6 @@ void mpu_getacc(int16_data* data)
     }
   }
 }
-
 void mpu_getgyro(int16_data* data)
 {
   Raw_data raw={0};
@@ -42,7 +41,6 @@ void mpu_getgyro(int16_data* data)
     }
   }
 }
-
 void mpu_getmag(int16_data* data)
 {
   Raw_data raw={0};
@@ -53,7 +51,6 @@ void mpu_getmag(int16_data* data)
     }
   }
 }
-
 void mpu_getbaro(int32_data* data)
 {
   Raw_data raw={0};
@@ -61,7 +58,6 @@ void mpu_getbaro(int32_data* data)
   data->array.data[0] = (raw.data[0]<<16) | (raw.data[1]<<8) | (raw.data[2]);   //온도
   data->array.data[1] = (raw.data[3]<<16) | (raw.data[4]<<8) | (raw.data[5]);   //압력
 }
-
 void mpu_get_sensor_data(int16_data* acc, int16_data* gyro, int16_data* mag, int32_data* baro)
 {
   mpu_getacc(acc);
@@ -69,7 +65,6 @@ void mpu_get_sensor_data(int16_data* acc, int16_data* gyro, int16_data* mag, int
   mpu_getmag(mag);
   mpu_getbaro(baro);
 }
-
 void mpu_set_mag_init(int16_data* data)
 {
   Raw_data raw={0};

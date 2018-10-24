@@ -45,8 +45,6 @@ void compute_attitude(float_data* rpy)
   static int32_data accsmooth={0};
   static uint16_t TIME;
 
-
-
 }
 
 
