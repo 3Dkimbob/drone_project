@@ -19,6 +19,10 @@
 #define GYR_CMPF_FACTOR 600
 #define INV_GYR_CMPF_FACTOR   (1.0f / (GYR_CMPF_FACTOR  + 1.0f))
 
+#define GYRO_SCALE            (4 / MPU_GYRO_CONFIG_FS_DIV * PI / 180.0 / 1000000.0)
+
+#define ACCZ_25deg            (int16_t)(ACC_1G * 0.90631) // 0.90631 = cos(25deg) (cos(theta) of accZ comparison)
+
 
 
 

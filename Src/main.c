@@ -174,32 +174,6 @@ int main(void)
     time = 0;
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, toggle);
     toggle = !toggle;
-    mpu_getmag(&mag);
-    mpu_getacc(&acc);
-    mpu_getgyro(&gyro);
-    compute_mag_revise(&mag, &mag_sensitivity, &mag32);
-
-
-    for(int i=0; i<3; i++){
-      sprintf((char*)str,"acc16-%d : %ld\n",i+1,acc.array.data[i]);
-      HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
-    }
-    for(int i=0; i<3; i++){
-      sprintf((char*)str,"gyro16-%d : %ld\n",i+1,gyro.array.data[i]);
-      HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
-    }
-    for(int i=0; i<3; i++){
-      sprintf((char*)str,"mag16-%d : %d\n",i+1,mag.array.data[i]);
-      HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
-    }
-    for(int i=0; i<3; i++){
-      sprintf((char*)str,"mag32-%d : %ld\n",i+1,mag32.array.data[i]);
-      HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
-    }
-    temp = i2c_read_byte(BMP280_I2C_ADDRESS, BMP280_CHIP_ID_REG);
-    sprintf((char*)str,"LOOPTIME : %lu us  BMP280_ID : %d\n",dt,temp);
-    HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
-    HAL_Delay(300);
 
   /* USER CODE END WHILE */
 

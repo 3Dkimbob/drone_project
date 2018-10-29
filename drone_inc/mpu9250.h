@@ -66,7 +66,7 @@
 #define MPU_ACC_CONFIG_FS_DIV 2048
 #endif
 
-#define ACC_1G                (MPU_ACC_CONFIG_FS_DIV>>MPU9250_ACCRAW_DIV)
+#define ACC_1G                      (MPU_ACC_CONFIG_FS_DIV>>MPU9250_ACCRAW_DIV)
 
 #define MPU9250_CONFIG_REG          0x1A                    //    /*    ACC   */    /*      GYRO      */
 #define MPU9250_CONFIG_DLPF_CFG     MPU9250_CONFIG_DLPF_0   //    Bandwith  Delay   Bandwidth Delay Fs

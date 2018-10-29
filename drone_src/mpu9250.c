@@ -175,6 +175,42 @@ void mpu_get_mpucalibrate()
  * */
 
 
+void mpu_print()
+{
+  uint8_t str[200];
+  uint8_t rx[3];
+  uint8_t rx_buffer[200];
+  uint8_t rx_pos=0;
+  uint32_t dt;
+  int16_data acc,gyro,mag={0};
+  int16_data mag_sensitivity;
+  int32_data acc32,gyro32,mag32;
+  mpu_getmag(&mag);
+  mpu_getacc(&acc);
+  mpu_getgyro(&gyro);
+  compute_mag_revise(&mag, &mag_sensitivity, &mag32);
+  for(int i=0; i<3; i++){
+    sprintf((char*)str,"acc16-%d : %ld\n",i+1,acc.array.data[i]);
+    HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
+  }
+  for(int i=0; i<3; i++){
+    sprintf((char*)str,"gyro16-%d : %ld\n",i+1,gyro.array.data[i]);
+    HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
+  }
+  for(int i=0; i<3; i++){
+    sprintf((char*)str,"mag16-%d : %d\n",i+1,mag.array.data[i]);
+    HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
+  }
+  for(int i=0; i<3; i++){
+    sprintf((char*)str,"mag32-%d : %ld\n",i+1,mag32.array.data[i]);
+    HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
+  }
+  temp = i2c_read_byte(BMP280_I2C_ADDRESS, BMP280_CHIP_ID_REG);
+  sprintf((char*)str,"LOOPTIME : %lu us  BMP280_ID : %d\n",dt,temp);
+  HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
+  HAL_Delay(300);
+}
+
 
 
 
