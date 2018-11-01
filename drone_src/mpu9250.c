@@ -7,26 +7,30 @@
 #include "mpu9250.h"
 /*  외부소스  전역변수    */
 extern UART_HandleTypeDef huart3;
+
 /*****************/
 
-static int16_data acc_calibrate={0};
+int16_data acc_calibrate={0};
 static int16_data gyro_calibrate={0};
+static int16_data mag_sensitivity;
 //static int16_data mag_calibrate={0};
 static int16_t complete_calibrate=0;
+
 
 
 void mpu_getacc(int16_data* data)
 {
   Raw_data raw={0};
   i2c_read_bytes(MPU9250_I2C_ADDRESS,MPU9250_X_ACC_REG,&raw,6);
-  data->array.data[ROLL]  = (int16_t)(raw.data[0]<<8 | raw.data[1]) >> MPU9250_ACCRAW_DIV;
-  data->array.data[PITCH] = (int16_t)(raw.data[2]<<8 | raw.data[3]) >> MPU9250_ACCRAW_DIV;
-  data->array.data[YAW]   = (int16_t)(raw.data[4]<<8 | raw.data[5]) >> MPU9250_ACCRAW_DIV;
+  data->array.data[ROLL]  = (int16_t)((int16_t)raw.data[0]<<8 | raw.data[1]) >> MPU9250_ACCRAW_DIV;
+  data->array.data[PITCH] = (int16_t)((int16_t)raw.data[2]<<8 | raw.data[3]) >> MPU9250_ACCRAW_DIV;
+  data->array.data[YAW]   = (int16_t)((int16_t)raw.data[4]<<8 | raw.data[5]) >> MPU9250_ACCRAW_DIV;
   if(complete_calibrate){
     for(int i=0;i<3;i++){
       data->array.data[i] = data->array.data[i] - acc_calibrate.array.data[i];
     }
   }
+  HAL_Delay(1);
 }
 void mpu_getgyro(int16_data* data)
 {
@@ -40,6 +44,7 @@ void mpu_getgyro(int16_data* data)
       data->array.data[i] = data->array.data[i] - gyro_calibrate.array.data[i];
     }
   }
+  HAL_Delay(1);
 }
 void mpu_getmag(int16_data* data)
 {
@@ -48,6 +53,9 @@ void mpu_getmag(int16_data* data)
     i2c_read_bytes(AK8963_I2C_ADDRESS,AK8963_X_MAG_REG,&raw,7);
     for(int i=0;i<3;i++){
       data->array.data[i] = (raw.data[i*2+1]<<8) | (raw.data[i*2]);
+    }
+    for(int i=0; i<3; i++){
+      data->array.data[i] = data->array.data[i]*((float)(mag_sensitivity.array.data[i]-128)*0.5/128+1) ;
     }
   }
 }
@@ -65,14 +73,14 @@ void mpu_get_sensor_data(int16_data* acc, int16_data* gyro, int16_data* mag, int
   mpu_getmag(mag);
   mpu_getbaro(baro);
 }
-void mpu_set_mag_init(int16_data* data)
+void mpu_set_mag_init()
 {
   Raw_data raw={0};
   i2c_write_byte(AK8963_I2C_ADDRESS, AK8963_CNTL1_REG, 0x0F); HAL_Delay(10);
 
   i2c_read_bytes(AK8963_I2C_ADDRESS,AK8963_ASAX_REG,&raw,3);
   for(int i=0;i<3;i++)
-    data->array.data[i]=(int16_t)raw.data[i];
+    mag_sensitivity.array.data[i]=(int16_t)raw.data[i];
 
   i2c_write_byte(AK8963_I2C_ADDRESS, AK8963_CNTL1_REG, 0x00); HAL_Delay(10);
   i2c_write_byte(AK8963_I2C_ADDRESS, AK8963_CNTL1_REG, 0x16); HAL_Delay(10);
@@ -80,17 +88,19 @@ void mpu_set_mag_init(int16_data* data)
 void mpu_set_init()
 {
   i2c_write_byte(MPU9250_I2C_ADDRESS, MPU9250_POWER_SET_REG,    MPU9250_POWER_SET_REG_RESET);
-  HAL_Delay(10);
+  HAL_Delay(100);
   i2c_write_byte(MPU9250_I2C_ADDRESS, MPU9250_POWER_SET_REG,    MPU9250_POWER_SET_CLKSET);
-  HAL_Delay(10);
+  HAL_Delay(100);
   i2c_write_byte(MPU9250_I2C_ADDRESS, MPU9250_ACC_CONFIG_REG,   MPU9250_ACC_CONFIG_FS_X);
-  HAL_Delay(10);
-  i2c_write_byte(MPU9250_I2C_ADDRESS, MPU9250_ACC_CONFIG_REG,   MPU9250_GYRO_CONFIG_FS_X);
-  HAL_Delay(10);
+  HAL_Delay(100);
+  i2c_write_byte(MPU9250_I2C_ADDRESS, MPU9250_GYRO_CONFIG_REG,  MPU9250_GYRO_CONFIG_FS_X);
+  HAL_Delay(100);
   i2c_write_byte(MPU9250_I2C_ADDRESS, MPU9250_INT_PIN_CFG_REG,  MPU9250_INT_PIN_CFG_BYPASS_EN);
-  HAL_Delay(10);
+  HAL_Delay(100);
   i2c_write_byte(MPU9250_I2C_ADDRESS, MPU9250_USER_CTRL_REG,    MPU9250_USER_CTRL_I2CDISABLE);
-  HAL_Delay(10);
+  HAL_Delay(100);
+  i2c_write_byte(MPU9250_I2C_ADDRESS, MPU9250_CONFIG_REG,       MPU9250_CONFIG_DLPF_4);
+  HAL_Delay(100);
 }
 void mpu_set_baro_init()
 {
@@ -107,7 +117,7 @@ uint8_t mpu_test()    //return값 0 : 정상      1: AK8963,BMP280문제     3: MPU92
   for(int i=0 ;i<0x7F ; i++){
     for(int j=0; j<0xFF;j++){
       temp = i2c_read_byte(i, j);
-      if(temp == MPU9250_ID && i == MPU9250_I2C_ADDRESS && j == MPU9250_WHO_AM_I){
+      if(temp == MPU9250_WHO_AM_I_ID && i == MPU9250_I2C_ADDRESS && j == MPU9250_WHO_AM_I){
         sprintf((char*)str,"FIND%#X address - %#X reg : %#X\n",i,j,temp);
         HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),10);
         check++;
@@ -133,6 +143,8 @@ uint8_t mpu_test()    //return값 0 : 정상      1: AK8963,BMP280문제     3: MPU92
     return 0;
   }
   else{
+    sprintf((char*)str,"NO SENSOR DETECT");
+    HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),10);
     perspect = sensor[0]+sensor[1]+sensor[2];
     if(perspect == 0)
       return 0xFF;
@@ -146,8 +158,8 @@ uint8_t mpu_test()    //return값 0 : 정상      1: AK8963,BMP280문제     3: MPU92
  * */
 void mpu_get_mpucalibrate()
 {
-  static int32_data acc={0};
-  static int32_data gyro={0};
+  static int64_data acc={0};
+  static int64_data gyro={0};
   //static int32_data mag;
 
   for(int i=0 ; i < 512 ; i++){
@@ -163,53 +175,17 @@ void mpu_get_mpucalibrate()
     HAL_Delay(1);
   }
   for(int j=0;j<3;j++){
-    acc_calibrate.array.data[j]   = (acc.array.data[j]+256)>>CALIBRATE_SHIFT;
-    gyro_calibrate.array.data[j]  = (gyro.array.data[j]+256)>>CALIBRATE_SHIFT;
+    acc_calibrate.array.data[j]   = (acc.array.data[j])>>CALIBRATE_SHIFT;
+    gyro_calibrate.array.data[j]  = (gyro.array.data[j])>>CALIBRATE_SHIFT;
     //mag_calibrate.array.data[j]   = mag.array.data[j]/CALIBRATE_NUM;
   }
   acc_calibrate.xyz.z -= ACC_1G;
   complete_calibrate = 1;
 }
-/* compute_get_mpucalibrate()를 먼저 호출하여야한다.
- * 전역변수로 선언된 칼리브레이트 기준값을 이용하여 읽어들이는 값을 보정한다.
- * */
 
 
-void mpu_print()
-{
-  uint8_t str[200];
-  uint8_t rx[3];
-  uint8_t rx_buffer[200];
-  uint8_t rx_pos=0;
-  uint32_t dt;
-  int16_data acc,gyro,mag={0};
-  int16_data mag_sensitivity;
-  int32_data acc32,gyro32,mag32;
-  mpu_getmag(&mag);
-  mpu_getacc(&acc);
-  mpu_getgyro(&gyro);
-  compute_mag_revise(&mag, &mag_sensitivity, &mag32);
-  for(int i=0; i<3; i++){
-    sprintf((char*)str,"acc16-%d : %ld\n",i+1,acc.array.data[i]);
-    HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
-  }
-  for(int i=0; i<3; i++){
-    sprintf((char*)str,"gyro16-%d : %ld\n",i+1,gyro.array.data[i]);
-    HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
-  }
-  for(int i=0; i<3; i++){
-    sprintf((char*)str,"mag16-%d : %d\n",i+1,mag.array.data[i]);
-    HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
-  }
-  for(int i=0; i<3; i++){
-    sprintf((char*)str,"mag32-%d : %ld\n",i+1,mag32.array.data[i]);
-    HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
-  }
-  temp = i2c_read_byte(BMP280_I2C_ADDRESS, BMP280_CHIP_ID_REG);
-  sprintf((char*)str,"LOOPTIME : %lu us  BMP280_ID : %d\n",dt,temp);
-  HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
-  HAL_Delay(300);
-}
+
+
 
 
 

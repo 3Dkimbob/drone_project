@@ -16,9 +16,9 @@
 #define Gravity 9.8
 #define RAD_TO_DEGREE 180/PI
 
-#define MPU9250_I2C_ADDRESS             0X68
+#define MPU9250_I2C_ADDRESS             0x68
 #define MPU9250_WHO_AM_I                0x75
-#define MPU9250_ID                      0x71
+#define MPU9250_WHO_AM_I_ID             0x71
 
 #define MPU9250_X_ACC_REG               0x3B
 #define MPU9250_X_GYRO_REG              0x43
@@ -27,8 +27,10 @@
 #define MPU9250_POWER_SET_REG           0x6B
 #define MPU9250_POWER_SET_REG_RESET     0x80
 #define MPU9250_POWER_SET_CLKSET        0x01
+
 #define MPU9250_INT_PIN_CFG_REG         0x37
 #define MPU9250_INT_PIN_CFG_BYPASS_EN   0x02
+
 #define MPU9250_USER_CTRL_REG           0x6A
 #define MPU9250_USER_CTRL_I2CDISABLE    0x00
 
@@ -49,6 +51,10 @@
 #define MPU_GYRO_CONFIG_FS_DIV 16.4
 #endif
 
+/*  가속도 설정 레지스터
+ *  가속도의 측정범위 및 단위크기 설정
+ *  사용 예) i2c_write_byte(MPU9250_I2C_ADDRESS, MPU9250_ACC_CONFIG_REG,   MPU9250_ACC_CONFIG_FS_X);
+ * */
 #define MPU9250_ACC_CONFIG_REG      0x1C
 #define MPU9250_ACC_CONFIG_FS_2     (0x00<<3)
 #define MPU9250_ACC_CONFIG_FS_4     (0x01<<3)
@@ -66,24 +72,25 @@
 #define MPU_ACC_CONFIG_FS_DIV 2048
 #endif
 
-#define ACC_1G                      (MPU_ACC_CONFIG_FS_DIV>>MPU9250_ACCRAW_DIV)
-
+/* DLPF 설정 레지스터
+ * */
 #define MPU9250_CONFIG_REG          0x1A                    //    /*    ACC   */    /*      GYRO      */
 #define MPU9250_CONFIG_DLPF_CFG     MPU9250_CONFIG_DLPF_0   //    Bandwith  Delay   Bandwidth Delay Fs
-#define MPU9250_CONFIG_DLPF_0       0                       //      260      0      256   0.98  8
-#define MPU9250_CONFIG_DLPF_1       1                       //      184     2.0     188    1.9  1
-#define MPU9250_CONFIG_DLPF_2       2                       //       94     3.0      98    2.8  1
-#define MPU9250_CONFIG_DLPF_3       3                       //       44     4.9      42    4.8  1
-#define MPU9250_CONFIG_DLPF_4       4                       //       21     8.5      20    8.3  1
-#define MPU9250_CONFIG_DLPF_5       5                       //       10    13.8      10   13.4  1
-#define MPU9250_CONFIG_DLPF_6       6                       //        5    19.0       5   18.6  1
+#define MPU9250_CONFIG_DLPF_0       0                       //      260      0          256   0.98  8
+#define MPU9250_CONFIG_DLPF_1       1                       //      184     2.0         188    1.9  1
+#define MPU9250_CONFIG_DLPF_2       2                       //       94     3.0          98    2.8  1
+#define MPU9250_CONFIG_DLPF_3       3                       //       44     4.9          42    4.8  1
+#define MPU9250_CONFIG_DLPF_4       4                       //       21     8.5          20    8.3  1
+#define MPU9250_CONFIG_DLPF_5       5                       //       10    13.8          10   13.4  1
+#define MPU9250_CONFIG_DLPF_6       6                       //        5    19.0           5   18.6  1
 #define MPU9250_CONFIG_DLPF_7       7                       //    RESERVED  RESERVED  RESERVED  RESERVED  8
 
 #define MPU9250_SMPLRT_DIV_REG        0x19
 #define MPU9250_SMPLRT_DIV_X          0x00
 
-#define MPU9250_ACCRAW_DIV          3
+#define MPU9250_ACCRAW_DIV          2
 #define MPU9250_GYRORAW_DIV         2
+#define ACC_1G                      (MPU_ACC_CONFIG_FS_DIV>>MPU9250_ACCRAW_DIV)
 
 #define ERROR_GYRO                    100
 #define ERROR_ACC                     100
@@ -164,11 +171,12 @@
 void mpu_getacc(int16_data* data);
 void mpu_getgyro(int16_data* data);
 void mpu_getmag(int16_data* data);
-void mpu_set_mag_init(int16_data* data);
+void mpu_set_mag_init();
 void mpu_set_init();
 void mpu_set_baro_init();
 void mpu_get_sensor_data(int16_data* acc, int16_data* gyro, int16_data* mag, int32_data* baro);
 uint8_t mpu_test();
+
 
 
 #define CALIBRATE_SHIFT     9

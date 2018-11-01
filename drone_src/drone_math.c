@@ -36,7 +36,7 @@ float InvSqrt (float x)
 {
   union{
     int32_t i;
-    float   f;
+    float  f;
   } conv;
   conv.f = x;
   conv.i = 0x5f3759df - (conv.i >> 1);
