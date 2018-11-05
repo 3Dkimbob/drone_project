@@ -30,7 +30,6 @@ void mpu_getacc(int16_data* data)
       data->array.data[i] = data->array.data[i] - acc_calibrate.array.data[i];
     }
   }
-  HAL_Delay(1);
 }
 void mpu_getgyro(int16_data* data)
 {
@@ -44,7 +43,6 @@ void mpu_getgyro(int16_data* data)
       data->array.data[i] = data->array.data[i] - gyro_calibrate.array.data[i];
     }
   }
-  HAL_Delay(1);
 }
 void mpu_getmag(int16_data* data)
 {

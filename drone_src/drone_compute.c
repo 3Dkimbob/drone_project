@@ -41,14 +41,14 @@ static int32_data EstG32={0};
 
 void compute_attitude(float_data* rpy,int16_data* acc,int16_data* gyro,int16_data* mag)
 {
-  static int16_data accLPF32={0};
+  static int32_data accLPF32={0};
   float_data deltaGyroAngle;
   int32_t accMag = 0;
   float scale;
   static int32_data accsmooth={0};
-  uint32_t currentT=time*10;
+  uint32_t currentT=time;
 
-  scale = currentT * GYRO_SCALE; // GYRO_SCALE unit: radian/microsecond
+  scale = (float)currentT*TIME_SCALE_MS * GYRO_SCALE; // GYRO_SCALE unit: radian/microsecond
   time = 0;
 
   // Initialization
@@ -74,15 +74,15 @@ void compute_attitude(float_data* rpy,int16_data* acc,int16_data* gyro,int16_dat
 //    HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
 //  }
   int32_t sqGX_sqGZ = EstG32.xyz.x*EstG32.xyz.x + EstG32.xyz.z*EstG32.xyz.z;
-  float sqGX_sqGZ_f = sqrt(EstG.xyz.x*EstG.xyz.x + EstG.xyz.z*EstG.xyz.z);
-//  rpy->array.data[ROLL]  = _atan2(EstG32.xyz.x , EstG32.xyz.z);
-//  rpy->array.data[PITCH] = _atan2(EstG32.xyz.y , InvSqrt(sqGX_sqGZ)*sqGX_sqGZ);
-  rpy->array.data[ROLL]  = atan2(EstG.xyz.x , EstG.xyz.z)*180/PI;
-  rpy->array.data[PITCH] = atan2(EstG.xyz.y , sqGX_sqGZ_f)*180/PI;
+//  float sqGX_sqGZ_f = sqrt(EstG.xyz.x*EstG.xyz.x + EstG.xyz.z*EstG.xyz.z);
+  rpy->array.data[ROLL]  = _atan2(EstG32.xyz.x , EstG32.xyz.z);
+  rpy->array.data[PITCH] = _atan2(EstG32.xyz.y , InvSqrt(sqGX_sqGZ)*sqGX_sqGZ);
+//  rpy->array.data[ROLL]  = atan2(EstG.xyz.x , EstG.xyz.z)*180/PI;
+//  rpy->array.data[PITCH] = atan2(EstG.xyz.y , sqGX_sqGZ_f)*180/PI;
 
 }
 
-void compute_IMU (float_data* rpy) {
+void compute_IMU(float_data* rpy) {
   static int16_data acc,gyro,mag;
   static int16_t gyroADCprevious[3] = {0,0,0};
   int16_t gyroADCp[3];
@@ -95,8 +95,8 @@ void compute_IMU (float_data* rpy) {
 
   for (int i = 0; i < 3; i++)
     gyroADCp[i] =  gyro.array.data[i];
-  timeInterleave = time*10;
-  while((uint16_t)(time*10-timeInterleave)<650)
+//  timeInterleave = time*10;
+//  while((uint16_t)(time*10-timeInterleave)<650)
 
   mpu_getgyro(&gyro);
   for (int i = 0; i < 3; i++) {
@@ -109,31 +109,28 @@ void compute_IMU (float_data* rpy) {
 
 void droneRPY_print()
 {
-  uint32_t dt=time1*100;
-  int16_data acc,gyro={0};
+  uint32_t dt=time1/100;
   float_data rpy={0};
+  static uint32_t count=0;
 
-//
-//  mpu_getacc(&acc);
-//  mpu_getgyro(&gyro);
+
   compute_IMU(&rpy);
-  if(dt > 100000){
-//    for(int i=0; i<3; i++){
-//      sprintf((char*)str,"acc16-%d : %d\n",i+1,acc.array.data[i]);
+  count++;
+  if(dt >= 1000){
+//      sprintf((char*)str,"ROLL : %f\n",rpy.array.data[ROLL]);
 //      HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
-//    }
-//    for(int i=0; i<3; i++){
-//      sprintf((char*)str,"gyro16-%d : %d\n",i+1,gyro.array.data[i]);
+//      sprintf((char*)str,"PITCH : %f\n",rpy.array.data[PITCH]);
 //      HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
-//    }
-    for(int i=0; i<3; i++){
-      sprintf((char*)str,"rpy-%d : %f\n",i+1,rpy.array.data[i]);
-      HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
-    }
-    temp = i2c_read_byte(BMP280_I2C_ADDRESS, BMP280_CHIP_ID_REG);
-    sprintf((char*)str,"LOOPTIME : %lu us  BMP280_ID : %d\n",dt,temp);
+
+//        sprintf((char*)str,"%f,%f\n",rpy.array.data[ROLL],rpy.array.data[PITCH]);
+//        HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
+    sprintf((char*)str,"loop count : %lu/sec\n",count);
     HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
+//    temp = i2c_read_byte(BMP280_I2C_ADDRESS, BMP280_CHIP_ID_REG);
+//    sprintf((char*)str,"LOOPTIME : %lu us  BMP280_ID : %d\n",dt,temp);
+//    HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
     time1=0;
+    count=0;
   }
 }
 #else

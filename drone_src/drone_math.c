@@ -7,7 +7,7 @@
 
 #include "drone_math.h"
 
-uint32_t abs(int32_t x)
+int32_t abs(int32_t x)
 {
   if(x<0)
     return -x;

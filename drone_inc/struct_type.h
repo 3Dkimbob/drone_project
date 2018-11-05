@@ -7,6 +7,7 @@
 
 #ifndef STRUCT_TYPE_H_
 #define STRUCT_TYPE_H_
+#include "stm32f1xx_hal.h"
 
 enum{
   ROLL,PITCH,YAW,ALTITUDE

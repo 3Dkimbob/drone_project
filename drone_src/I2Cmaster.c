@@ -13,7 +13,7 @@ extern I2C_HandleTypeDef hi2c1;
 uint8_t i2c_read_byte(uint8_t slave_address, uint8_t read_register)
 {
   uint8_t start=read_register;
-  uint8_t address = (slave_address<<1) | TWI_READ_BIT;
+  uint8_t address = (slave_address<<1);
   uint8_t data;
   HAL_I2C_Master_Transmit(&hi2c1, address, &start,1,TIME_OUT_TWI);
   HAL_I2C_Master_Receive(&hi2c1, address, &data, 1,TIME_OUT_TWI);

@@ -51,8 +51,6 @@
 
 #define LED7_Pin GPIO_PIN_13
 #define LED7_GPIO_Port GPIOC
-#define NCS_Pin GPIO_PIN_4
-#define NCS_GPIO_Port GPIOA
 #define LED0_Pin GPIO_PIN_5
 #define LED0_GPIO_Port GPIOA
 #define LED1_Pin GPIO_PIN_6

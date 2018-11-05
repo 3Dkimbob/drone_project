@@ -20,7 +20,7 @@ uint8_t i2c_read_byte(uint8_t slave_address, uint8_t read_register);
 #define TWI_START_SRAM        0x40005400
 #define TWI_END_SRAM          0x400057FF
 
-#define TIME_OUT_TWI          10U
+#define TIME_OUT_TWI          1U
 
 #define TWI_CONTROL1_OFFSET         0x00        //resetvalue = 0x0000
 #define TWI_CONTROL2_OFFSET         0x04        //resetvalue = 0x0000

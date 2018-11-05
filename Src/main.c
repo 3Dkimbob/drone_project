@@ -110,6 +110,7 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
   int toggle =0;
+  float_data rpy;
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -152,9 +153,11 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-   droneRPY_print();
-   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, toggle);
-   toggle = !toggle;
+//    compute_IMU(&rpy);
+    droneRPY_print();
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, toggle);
+    toggle = !toggle;
+
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
@@ -227,7 +230,7 @@ static void MX_I2C1_Init(void)
 {
 
   hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 400000;
+  hi2c1.Init.ClockSpeed = 100000;
   hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
@@ -429,7 +432,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LED7_GPIO_Port, LED7_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, NCS_Pin|LED0_Pin|LED1_Pin|LED2_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LED0_Pin|LED1_Pin|LED2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, LED3_Pin|LED4_Pin|LED5_Pin|LED6_Pin, GPIO_PIN_RESET);
@@ -458,8 +461,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : NCS_Pin LED0_Pin LED1_Pin LED2_Pin */
-  GPIO_InitStruct.Pin = NCS_Pin|LED0_Pin|LED1_Pin|LED2_Pin;
+  /*Configure GPIO pin : PA4 */
+  GPIO_InitStruct.Pin = GPIO_PIN_4;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : LED0_Pin LED1_Pin LED2_Pin */
+  GPIO_InitStruct.Pin = LED0_Pin|LED1_Pin|LED2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
