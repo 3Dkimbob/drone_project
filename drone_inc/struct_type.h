@@ -12,6 +12,9 @@
 enum{
   ROLL,PITCH,YAW,ALTITUDE
 };
+enum{
+  P,I,D
+};
 typedef struct _Raw_data
 {
   uint8_t data[8];

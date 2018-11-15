@@ -18,9 +18,10 @@
 
 #ifdef regacy
 #define ACC_LPF_FACTOR    4
+#define RPY_COMF_FILTER_FACTOR 0.96
 #define GYR_CMPF_FACTOR 580
 #define INV_GYR_CMPF_FACTOR   (1.0f / (GYR_CMPF_FACTOR  + 1.0f))
-#define GYRO_SCALE            (4 / MPU_GYRO_CONFIG_FS_DIV * PI / 180.0 / 1000000.0)
+#define GYRO_SCALE            ((1<<MPU9250_GYRORAW_DIV) / MPU_GYRO_CONFIG_FS_DIV * PI / 180.0 / 1000000.0)
 #define ACCZ_25deg            (int16_t)(ACC_1G * 0.90631) // 0.90631 = cos(25deg) (cos(theta) of accZ comparison)
 
 #define TIME_SCALE_MS     0.01

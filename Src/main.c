@@ -54,8 +54,6 @@
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
-RTC_HandleTypeDef hrtc;
-
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim2;
 
@@ -73,8 +71,7 @@ static void MX_TIM1_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_USART3_UART_Init(void);
-static void MX_RTC_Init(void);
-
+                                    
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
                                 
 
@@ -110,6 +107,7 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
   int toggle =0;
+  char str[50];
   float_data rpy;
   /* USER CODE END 1 */
 
@@ -135,18 +133,30 @@ int main(void)
   MX_TIM2_Init();
   MX_I2C1_Init();
   MX_USART3_UART_Init();
-  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
   HAL_Delay(100);
+  sprintf(str,"HAL_Initializing OK\n");
+  HAL_UART_Transmit(&huart3, str, strlen(str), 20);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, 1);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, 1);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, 1);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, 1);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, 1);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, 1);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, 1);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
   mpu_set_init();
   mpu_set_mag_init();
   mpu_get_mpucalibrate();
+  sprintf(str,"MPU_Initializing OK\n");
+  HAL_UART_Transmit(&huart3, str, strlen(str), 20);
 
   //while(mpu_test());
   HAL_Delay(1000);
   HAL_TIM_Base_Start_IT(&htim2);
   time = 0;
-
+  sprintf(str,"TIM_Initializing OK\n");
+  HAL_UART_Transmit(&huart3, str, strlen(str), 20);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -155,8 +165,7 @@ int main(void)
   {
 //    compute_IMU(&rpy);
     droneRPY_print();
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, toggle);
-    toggle = !toggle;
+
 
   /* USER CODE END WHILE */
 
@@ -175,14 +184,12 @@ void SystemClock_Config(void)
 
   RCC_OscInitTypeDef RCC_OscInitStruct;
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
-  RCC_PeriphCLKInitTypeDef PeriphClkInit;
 
     /**Initializes the CPU, AHB and APB busses clocks 
     */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
-  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
@@ -206,13 +213,6 @@ void SystemClock_Config(void)
     _Error_Handler(__FILE__, __LINE__);
   }
 
-  PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_RTC;
-  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSE;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
-
     /**Configure the Systick interrupt time 
     */
   HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
@@ -230,8 +230,8 @@ static void MX_I2C1_Init(void)
 {
 
   hi2c1.Instance = I2C1;
-  hi2c1.Init.ClockSpeed = 100000;
-  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c1.Init.ClockSpeed = 400000;
+  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_16_9;
   hi2c1.Init.OwnAddress1 = 0;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
@@ -242,33 +242,6 @@ static void MX_I2C1_Init(void)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
-
-}
-
-/* RTC init function */
-static void MX_RTC_Init(void)
-{
-
-  /* USER CODE BEGIN RTC_Init 0 */
-
-  /* USER CODE END RTC_Init 0 */
-
-  /* USER CODE BEGIN RTC_Init 1 */
-
-  /* USER CODE END RTC_Init 1 */
-
-    /**Initialize RTC Only 
-    */
-  hrtc.Instance = RTC;
-  hrtc.Init.AsynchPrediv = RTC_AUTO_1_SECOND;
-  hrtc.Init.OutPut = RTC_OUTPUTSOURCE_ALARM;
-  if (HAL_RTC_Init(&hrtc) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
-  /* USER CODE BEGIN RTC_Init 2 */
-
-  /* USER CODE END RTC_Init 2 */
 
 }
 

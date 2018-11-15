@@ -48,7 +48,7 @@ void compute_attitude(float_data* rpy,int16_data* acc,int16_data* gyro,int16_dat
   static int32_data accsmooth={0};
   uint32_t currentT=time;
 
-  scale = (float)currentT*TIME_SCALE_MS * GYRO_SCALE; // GYRO_SCALE unit: radian/microsecond
+  scale = (float)currentT * TIME_SCALE_US * GYRO_SCALE; // GYRO_SCALE unit: radian/microsecond
   time = 0;
 
   // Initialization
@@ -66,7 +66,7 @@ void compute_attitude(float_data* rpy,int16_data* acc,int16_data* gyro,int16_dat
   // To do that, we just skip filter, as EstV already rotated by Gyro
 
   for (int i = 0; i < 3; i++) {
-    EstG.array.data[i] = EstG.array.data[i] *0.9 + accsmooth.array.data[i] * 0.1;
+    EstG.array.data[i] = EstG.array.data[i] *RPY_COMF_FILTER_FACTOR + accsmooth.array.data[i] * (1-RPY_COMF_FILTER_FACTOR);
     EstG32.array.data[i] = EstG.array.data[i];
   }
 //  for(int i=0; i<3; i++){
@@ -112,11 +112,12 @@ void droneRPY_print()
   uint32_t dt=time1/100;
   float_data rpy={0};
   static uint32_t count=0;
+  static toggle = 0;
 
 
   compute_IMU(&rpy);
   count++;
-  if(dt >= 1000){
+  if(dt >= 10){
 //      sprintf((char*)str,"ROLL : %f\n",rpy.array.data[ROLL]);
 //      HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
 //      sprintf((char*)str,"PITCH : %f\n",rpy.array.data[PITCH]);
@@ -124,13 +125,23 @@ void droneRPY_print()
 
 //        sprintf((char*)str,"%f,%f\n",rpy.array.data[ROLL],rpy.array.data[PITCH]);
 //        HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
-    sprintf((char*)str,"loop count : %lu/sec\n",count);
+    sprintf((char*)str,"%f,%f\n",rpy.xyz.x,rpy.xyz.y);
     HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
 //    temp = i2c_read_byte(BMP280_I2C_ADDRESS, BMP280_CHIP_ID_REG);
 //    sprintf((char*)str,"LOOPTIME : %lu us  BMP280_ID : %d\n",dt,temp);
 //    HAL_UART_Transmit(&huart3, str, (uint16_t)strlen((char*)str),5);
     time1=0;
     count=0;
+//    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, toggle);
+//    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, toggle);
+//    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, toggle);
+//    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_12, toggle);
+//    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, !toggle);
+//    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_14, !toggle);
+//    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_15, !toggle);
+//    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, !toggle);
+
+    toggle = !toggle;
   }
 }
 #else
